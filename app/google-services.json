@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "728457333422",
+    "project_id": "diplomaigor",
+    "storage_bucket": "diplomaigor.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:728457333422:android:644aa20e9120e5dc483b3f",
+        "android_client_info": {
+          "package_name": "com.example.diplomaigor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFDc1WY5q2pxS83Jwa3wcx-IibOyKa1NI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
