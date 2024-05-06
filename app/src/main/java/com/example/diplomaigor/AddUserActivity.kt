@@ -1,26 +1,36 @@
 package com.example.diplomaigor
 
+import android.Manifest
 import android.app.DatePickerDialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.telephony.SmsManager
 import android.widget.Button
 import android.widget.DatePicker
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import androidx.core.app.ActivityCompat
+import com.google.firebase.database.*
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class AddUserActivity : AppCompatActivity() {
 
     private lateinit var database: DatabaseReference
     private lateinit var lastBloodDonationEditText: EditText
     private lateinit var calendar: Calendar
+    private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_user)
+
+        checkPermission()
 
         val editTextPhone = findViewById<EditText>(R.id.editTextPhone)
         val editTextName = findViewById<EditText>(R.id.editTextName)
@@ -45,8 +55,6 @@ class AddUserActivity : AppCompatActivity() {
 
             if (phoneNumber.isNotEmpty() && name.isNotEmpty() && surname.isNotEmpty() && bloodGroup.isNotEmpty() && lastBloodDonation.isNotEmpty() && isValidBloodGroup(bloodGroup)) {
                 saveData(phoneNumber, name, surname, bloodGroup, lastBloodDonation)
-                startActivity(Intent(this, MainActivity2::class.java))
-                finish()
             }
         }
     }
@@ -61,6 +69,7 @@ class AddUserActivity : AppCompatActivity() {
         if (donorId != null) {
             val donor = Donor(phoneNumber, name, surname, bloodGroup, lastBloodDonation)
             database.child(donorId).setValue(donor)
+            scheduleSMS(donor)
         }
     }
 
@@ -82,9 +91,32 @@ class AddUserActivity : AppCompatActivity() {
     }
 
     private fun updateLabel() {
-        val myFormat = "dd/MM/yyyy" // Формат дати
+        val myFormat = "dd/MM/yyyy"
         val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
         lastBloodDonationEditText.setText(sdf.format(calendar.time))
+    }
+
+    private fun scheduleSMS(donor: Donor) {
+        handler.postDelayed({
+            sendSMS(donor.phoneNumber, getString(R.string.sms_message))
+        }, TimeUnit.DAYS.toMillis(14))
+    }
+
+    private fun checkPermission(){
+        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.SEND_SMS), 101)
+        }
+    }
+
+    private fun sendSMS(phoneNumber: String, message: String) {
+        try {
+            val smsManager: SmsManager = SmsManager.getDefault()
+            smsManager.sendTextMessage(phoneNumber, null, message, null, null)
+            Toast.makeText(applicationContext, "SMS відправлено", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(applicationContext, "Помилка відправки SMS", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
+        }
     }
 }
 

@@ -1,17 +1,25 @@
 package com.example.diplomaigor
 
+import android.Manifest
 import android.app.DatePickerDialog
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
-import android.view.View
+import android.os.Handler
+import android.os.Looper
+import android.telephony.SmsManager
 import android.widget.Button
 import android.widget.DatePicker
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import com.google.firebase.database.*
-
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class EditDonorActivity : AppCompatActivity() {
 
@@ -25,6 +33,7 @@ class EditDonorActivity : AppCompatActivity() {
     private lateinit var database: DatabaseReference
     private lateinit var donorId: String
     private lateinit var calendar: Calendar
+    private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,6 +74,7 @@ class EditDonorActivity : AppCompatActivity() {
                     lastBloodDonation = lastBloodDonation
                 )
                 updateDonor(donor)
+                scheduleSMS(donor)
             }
         }
 
@@ -106,7 +116,7 @@ class EditDonorActivity : AppCompatActivity() {
     }
 
     private fun updateLabel() {
-        val myFormat = "dd/MM/yyyy" // Формат дати
+        val myFormat = "dd/MM/yyyy"
         val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
         lastBloodDonationEditText.setText(sdf.format(calendar.time))
     }
@@ -131,4 +141,22 @@ class EditDonorActivity : AppCompatActivity() {
             }
         })
     }
+
+    private fun scheduleSMS(donor: Donor) {
+        handler.postDelayed({
+            sendSMS(donor.phoneNumber, getString(R.string.sms_message))
+        }, TimeUnit.DAYS.toMillis(14))
+    }
+
+    private fun sendSMS(phoneNumber: String, message: String) {
+        try {
+            val smsManager: SmsManager = SmsManager.getDefault()
+            smsManager.sendTextMessage(phoneNumber, null, message, null, null)
+            Toast.makeText(applicationContext, "SMS відправлено", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(applicationContext, "Помилка відправки SMS", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
+        }
+    }
 }
+
