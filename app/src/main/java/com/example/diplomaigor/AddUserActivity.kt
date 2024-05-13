@@ -56,6 +56,8 @@ class AddUserActivity : AppCompatActivity() {
             if (phoneNumber.isNotEmpty() && name.isNotEmpty() && surname.isNotEmpty() && bloodGroup.isNotEmpty() && lastBloodDonation.isNotEmpty() && isValidBloodGroup(bloodGroup)) {
                 saveData(phoneNumber, name, surname, bloodGroup, lastBloodDonation)
             }
+            startActivity(Intent(this, MainActivity2::class.java))
+            finish()
         }
     }
 
